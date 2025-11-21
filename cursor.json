@@ -1,0 +1,54 @@
+{
+  "project": {
+    "name": "shift-smart-lite",
+    "description": "Lightweight labor management web app built with Next.js, Clerk.dev, Express, and PostgreSQL.",
+    "frontend": {
+      "framework": "nextjs",
+      "language": "typescript",
+      "styling": "tailwind",
+      "auth": "clerk",
+      "packages": [
+        "@clerk/nextjs",
+        "@tanstack/react-query",
+        "zustand",
+        "axios",
+        "dayjs",
+        "react-toastify",
+        "lucide-react"
+      ]
+    },
+    "backend": {
+      "framework": "express",
+      "language": "typescript",
+      "database": "postgresql",
+      "orm": "prisma",
+      "packages": [
+        "@clerk/express",
+        "pg",
+        "cors",
+        "dotenv",
+        "zod",
+        "axios"
+      ]
+    },
+    "database": {
+      "schema": "prisma",
+      "migrations": true
+    },
+    "notifications": {
+      "service": "onesignal",
+      "fallback": "firebase"
+    },
+    "env": {
+      "CLERK_PUBLISHABLE_KEY": "<your-clerk-publishable-key>",
+      "CLERK_SECRET_KEY": "<your-clerk-secret-key>",
+      "DATABASE_URL": "postgresql://user:password@localhost:5432/shiftsmartlite",
+      "ONESIGNAL_API_KEY": "<your-onesignal-key>"
+    },
+    "scripts": {
+      "dev": "next dev & ts-node backend/server.ts",
+      "build": "next build && tsc -p backend",
+      "start": "node backend/dist/server.js"
+    }
+  }
+}

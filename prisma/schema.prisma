@@ -1,0 +1,288 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(uuid())
+  clerkId      String    @unique @map("clerk_id")
+  name         String
+  email        String
+  role         Role      @default(EMPLOYEE)
+  workRoleId   String?   @map("work_role_id")
+  phoneNumber  String?   @map("phone_number")
+  smsEnabled   Boolean   @default(true) @map("sms_enabled")
+  availability Json?
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  workRole        WorkRole?        @relation(fields: [workRoleId], references: [id], onDelete: SetNull)
+  shifts          Shift[]
+  callouts        Callout[]
+  notifications   Notification[]
+  changedShifts   ShiftHistory[]
+  shiftTemplates  ShiftTemplate[]
+  smsLogs         SmsLog[]
+  timeOffRequests TimeOffRequest[]
+  reviewedTimeOff TimeOffRequest[] @relation("ReviewedTimeOff")
+  requestedSwaps           ShiftSwap[]                @relation("RequestedSwaps")
+  targetSwaps              ShiftSwap[]                @relation("TargetSwaps")
+  approvedSwaps            ShiftSwap[]                @relation("ApprovedSwaps")
+  availabilityChangeRequests AvailabilityChangeRequest[] @relation("RequestedAvailabilityChanges")
+  reviewedAvailabilityChanges AvailabilityChangeRequest[] @relation("ReviewedAvailabilityChanges")
+  onboardingProgress       OnboardingProgress?
+
+  @@map("users")
+}
+
+enum Role {
+  OPERATOR
+  EMPLOYEE
+}
+
+model WorkRole {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  users  User[]
+  shifts Shift[]
+
+  @@map("roles")
+}
+
+model Shift {
+  id          String      @id @default(uuid())
+  userId      String      @map("user_id")
+  roleId      String      @map("role_id")
+  startTime   DateTime    @map("start_time")
+  endTime     DateTime    @map("end_time")
+  status      ShiftStatus @default(DRAFT)
+  publishedAt DateTime?   @map("published_at")
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role        WorkRole       @relation(fields: [roleId], references: [id])
+  history     ShiftHistory[]
+  swaps       ShiftSwap[]
+  attendances Attendance[]
+  callouts    Callout[]
+
+  @@map("shifts")
+}
+
+enum ShiftStatus {
+  DRAFT
+  PUBLISHED
+  COMPLETED
+  CANCELLED
+}
+
+model ShiftHistory {
+  id        String   @id @default(uuid())
+  shiftId   String   @map("shift_id")
+  changedBy String   @map("changed_by")
+  oldData   Json     @map("old_data")
+  newData   Json     @map("new_data")
+  changedAt DateTime @default(now()) @map("changed_at")
+
+  shift Shift @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [changedBy], references: [id])
+
+  @@map("shift_history")
+}
+
+model Attendance {
+  id       String           @id @default(uuid())
+  shiftId  String           @unique @map("shift_id")
+  clockIn  DateTime?        @map("clock_in")
+  clockOut DateTime?        @map("clock_out")
+  status   AttendanceStatus @default(PENDING)
+  location Json?
+
+  shift Shift @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+
+  @@map("attendance")
+}
+
+enum AttendanceStatus {
+  PENDING
+  ON_SHIFT
+  COMPLETED
+  MISSED
+}
+
+model Callout {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  shiftId   String   @map("shift_id")
+  reason    String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shift Shift @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+
+  @@map("callouts")
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String           @map("user_id")
+  type      NotificationType
+  message   String
+  sentAt    DateTime         @default(now()) @map("sent_at")
+  read      Boolean          @default(false)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+enum NotificationType {
+  PUBLISH
+  UPDATE
+  CANCEL
+  REMINDER
+  CALLOUT
+  MISSED_CLOCKIN
+}
+
+model ShiftTemplate {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  createdBy   String   @map("created_by")
+  isActive    Boolean  @default(true) @map("is_active")
+  shifts      Json     // Array of shift patterns
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  creator User @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+
+  @@map("shift_templates")
+}
+
+model SmsLog {
+  id           String    @id @default(uuid())
+  userId       String    @map("user_id")
+  phoneNumber  String    @map("phone_number")
+  message      String
+  status       SmsStatus
+  sentAt       DateTime  @default(now()) @map("sent_at")
+  deliveredAt  DateTime? @map("delivered_at")
+  errorMessage String?   @map("error_message")
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("sms_logs")
+}
+
+enum SmsStatus {
+  PENDING
+  SENT
+  DELIVERED
+  FAILED
+}
+
+model TimeOffRequest {
+  id          String            @id @default(uuid())
+  userId      String            @map("user_id")
+  startDate   DateTime          @map("start_date")
+  endDate     DateTime          @map("end_date")
+  reason      String?
+  status      TimeOffStatus     @default(PENDING)
+  reviewedBy  String?           @map("reviewed_by")
+  reviewedAt  DateTime?         @map("reviewed_at")
+  denialReason String?          @map("denial_reason")
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+  
+  user     User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reviewer User? @relation("ReviewedTimeOff", fields: [reviewedBy], references: [id])
+  
+  @@map("time_off_requests")
+}
+
+enum TimeOffStatus {
+  PENDING
+  APPROVED
+  DENIED
+}
+
+model ShiftSwap {
+  id              String         @id @default(uuid())
+  shiftId         String         @map("shift_id")
+  requesterId     String         @map("requester_id")
+  targetUserId    String?        @map("target_user_id")
+  status          ShiftSwapStatus @default(PENDING)
+  approvedBy      String?        @map("approved_by")
+  approvedAt      DateTime?      @map("approved_at")
+  denialReason    String?        @map("denial_reason")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+  
+  shift      Shift @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+  requester  User  @relation("RequestedSwaps", fields: [requesterId], references: [id])
+  targetUser User? @relation("TargetSwaps", fields: [targetUserId], references: [id])
+  approver   User? @relation("ApprovedSwaps", fields: [approvedBy], references: [id])
+  
+  @@map("shift_swaps")
+}
+
+enum ShiftSwapStatus {
+  PENDING
+  CLAIMED
+  APPROVED
+  DENIED
+  CANCELLED
+}
+
+model AvailabilityChangeRequest {
+  id              String                        @id @default(uuid())
+  userId          String                        @map("user_id")
+  requestedChanges Json                         @map("requested_changes")
+  reason          String?
+  status          AvailabilityChangeStatus      @default(PENDING)
+  reviewedBy      String?                       @map("reviewed_by")
+  reviewedAt      DateTime?                     @map("reviewed_at")
+  denialReason    String?                       @map("denial_reason")
+  createdAt       DateTime                      @default(now()) @map("created_at")
+  updatedAt       DateTime                      @updatedAt @map("updated_at")
+
+  user     User  @relation("RequestedAvailabilityChanges", fields: [userId], references: [id], onDelete: Cascade)
+  reviewer User? @relation("ReviewedAvailabilityChanges", fields: [reviewedBy], references: [id])
+
+  @@map("availability_change_requests")
+}
+
+enum AvailabilityChangeStatus {
+  PENDING
+  APPROVED
+  DENIED
+}
+
+model OnboardingProgress {
+  id                    String   @id @default(uuid())
+  userId                String   @unique @map("user_id")
+  completedSteps        Json     @default("[]") @map("completed_steps")
+  currentStep           String?  @map("current_step")
+  isCompleted           Boolean  @default(false) @map("is_completed")
+  skippedTour           Boolean  @default(false) @map("skipped_tour")
+  lastActiveStep        String?  @map("last_active_step")
+  completedAt           DateTime? @map("completed_at")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("onboarding_progress")
+}
