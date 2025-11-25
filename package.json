@@ -10,7 +10,7 @@
     "build:frontend": "next build",
     "build:backend": "tsc -p backend/tsconfig.json",
     "start": "next start",
-    "start:backend": "node backend/dist/backend/server.js",
+    "start:backend": "node backend/dist/server.js",
     "postinstall": "prisma generate",
     "test": "jest --watch",
     "test:ci": "jest --ci --coverage",
