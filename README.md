@@ -1,4 +1,4 @@
-# ShiftSmart Lite - Restaurant Scheduling App
+# ShiftSmart - Restaurant Scheduling App
 
 Modern scheduling and team management for restaurants.
 
