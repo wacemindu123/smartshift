@@ -25,8 +25,11 @@ const PORT = process.env.PORT || 4000;
 // CORS configuration - allows both local and production origins
 const allowedOrigins = [
   'http://localhost:3000',
+  'https://smartshift-785vgck6r-ryans-projects-470b3376.vercel.app',
   process.env.FRONTEND_URL,
 ].filter(Boolean);
+
+console.log('🌐 Allowed CORS origins:', allowedOrigins);
 
 // Middleware
 app.use(cors({
@@ -37,12 +40,14 @@ app.use(cors({
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.error('❌ CORS blocked origin:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
+  exposedHeaders: ['Content-Type', 'Authorization'],
 }));
 app.use(express.json());
 app.use(clerkMiddleware());
