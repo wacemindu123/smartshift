@@ -25,6 +25,7 @@ const PORT = process.env.PORT || 4000;
 // CORS configuration - allows both local and production origins
 const allowedOrigins = [
   'http://localhost:3000',
+  'https://smartshift-aiipthddi-ryans-projects-470b3376.vercel.app',
   'https://smartshift-785vsok6r-ryans-projects-470b3376.vercel.app',
   process.env.FRONTEND_URL,
 ].filter(Boolean);
