@@ -46,5 +46,5 @@ app.use('/api/shift-swaps', shiftSwapsRouter);
 app.use('/api/availability-changes', availabilityChangesRouter);
 app.use('/api/onboarding', onboardingRouter);
 
-// Export for Vercel
+// Export for Vercel serverless
 export default app;
