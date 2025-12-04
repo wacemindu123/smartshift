@@ -1,14 +1,11 @@
 import axios from 'axios';
 import { useAuth } from '@clerk/nextjs';
 
-// In production (Vercel), API is on same domain, so use relative path
-// In development, use localhost:4000
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 
-  (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:4000');
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 // Create axios instance
 export const api = axios.create({
-  baseURL: API_URL ? `${API_URL}/api` : '/api',
+  baseURL: `${API_URL}/api`,
   headers: {
     'Content-Type': 'application/json',
   },
