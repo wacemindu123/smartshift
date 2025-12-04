@@ -22,41 +22,12 @@ import onboardingRouter from './routes/onboarding';
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// CORS configuration - allows Vercel deployments and localhost
-const allowedOrigins = [
-  'http://localhost:3000',
-  process.env.FRONTEND_URL,
-].filter(Boolean);
-
-// Also allow any Vercel preview URL for this project
-const isAllowedOrigin = (origin: string | undefined) => {
-  if (!origin) return true; // Allow requests with no origin
-  
-  // Check exact matches
-  if (allowedOrigins.includes(origin)) return true;
-  
-  // Allow any smartshift Vercel deployment
-  if (origin.includes('smartshift') && origin.includes('.vercel.app')) {
-    console.log('✅ Allowing Vercel deployment:', origin);
-    return true;
-  }
-  
-  return false;
-};
-
-console.log('🌐 Base allowed origins:', allowedOrigins);
-console.log('📝 Also allowing any smartshift*.vercel.app URLs');
+// CORS configuration - TEMPORARY WILDCARD FOR TESTING
+console.log('🚨 WARNING: Using wildcard CORS for testing - update for production!');
 
 // Middleware
 app.use(cors({
-  origin: (origin, callback) => {
-    if (isAllowedOrigin(origin)) {
-      callback(null, true);
-    } else {
-      console.error('❌ CORS blocked origin:', origin);
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: true, // Allow ALL origins temporarily
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],

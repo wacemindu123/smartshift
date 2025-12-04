@@ -21,7 +21,8 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "seed:demo": "npx tsx scripts/seed-demo-data.ts",
-    "remove:demo": "npx tsx scripts/remove-demo-data.ts"
+    "remove:demo": "npx tsx scripts/remove-demo-data.ts",
+    "health:check": "npx tsx scripts/check-production-health.ts"
   },
   "dependencies": {
     "@clerk/express": "^1.0.0",
