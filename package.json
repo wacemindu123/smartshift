@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "description": "Lightweight labor management web app built with Next.js, Clerk.dev, Express, and PostgreSQL",
   "scripts": {
-    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "dev": "next dev",
     "dev:frontend": "next dev",
     "dev:backend": "ts-node-dev --respawn --transpile-only backend/server.ts",
-    "build": "npm run build:frontend && npm run build:backend",
+    "build": "next build",
     "build:frontend": "next build",
     "build:backend": "tsc -p backend/tsconfig.json",
     "start": "next start",
