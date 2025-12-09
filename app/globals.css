@@ -22,4 +22,14 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+  
+  /* Safe area padding for mobile devices with gesture navigation */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  /* Add safe area to existing padding */
+  .pb-20-safe {
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+  }
 }
