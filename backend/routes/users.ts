@@ -11,24 +11,49 @@ const router = Router();
  */
 router.get('/me', requireAuth, async (req: AuthRequest, res) => {
   try {
-    const user = await prisma.user.findUnique({
+    console.log('🔍 /users/me called with Clerk ID:', req.userId);
+    
+    let user = await prisma.user.findUnique({
       where: { clerkId: req.userId! },
     });
+    
+    console.log('📊 Database query result:', user);
+
+    // Get Clerk user
+    const clerkUser = await clerkClient.users.getUser(req.userId!);
+    const userEmail = clerkUser.emailAddresses[0].emailAddress;
+    
+    // HARDCODED FOR LOCAL DEVELOPMENT
+    // Force specific email to be OPERATOR
+    let clerkRole: 'OPERATOR' | 'EMPLOYEE' = 'EMPLOYEE';
+    if (userEmail === 'widgeon1996@gmail.com') {
+      clerkRole = 'OPERATOR';
+      console.log('🔧 HARDCODED: Setting widgeon1996@gmail.com as OPERATOR');
+    } else {
+      clerkRole = (clerkUser.publicMetadata?.role as 'OPERATOR' | 'EMPLOYEE') || 'EMPLOYEE';
+    }
 
     if (!user) {
       // Create user if doesn't exist
-      const clerkUser = await clerkClient.users.getUser(req.userId!);
-      
       const newUser = await prisma.user.create({
         data: {
           clerkId: clerkUser.id,
-          name: `${clerkUser.firstName} ${clerkUser.lastName}`.trim() || clerkUser.emailAddresses[0].emailAddress,
-          email: clerkUser.emailAddresses[0].emailAddress,
-          role: (clerkUser.publicMetadata?.role as 'OPERATOR' | 'EMPLOYEE') || 'EMPLOYEE',
+          name: `${clerkUser.firstName} ${clerkUser.lastName}`.trim() || userEmail,
+          email: userEmail,
+          role: clerkRole,
         },
       });
 
       return res.json(newUser);
+    }
+
+    // Always sync role (important for hardcoded override)
+    if (user.role !== clerkRole) {
+      console.log(`Syncing role for ${user.email}: ${user.role} -> ${clerkRole}`);
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: { role: clerkRole },
+      });
     }
 
     res.json(user);

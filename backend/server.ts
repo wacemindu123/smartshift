@@ -34,12 +34,14 @@ app.use(cors({
   exposedHeaders: ['Content-Type', 'Authorization'],
 }));
 app.use(express.json());
-app.use(clerkMiddleware());
 
-// Health check
+// Health check (before Clerk middleware so it doesn't require auth)
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+
+// Apply Clerk middleware AFTER health check
+app.use(clerkMiddleware());
 
 // API Routes
 app.use('/api/shifts', shiftsRouter);

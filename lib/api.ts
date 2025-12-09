@@ -1,11 +1,12 @@
 import axios from 'axios';
 import { useAuth } from '@clerk/nextjs';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+// For Next.js API routes, we use relative paths
+const API_URL = process.env.NODE_ENV === 'production' ? '' : '';
 
 // Create axios instance
 export const api = axios.create({
-  baseURL: `${API_URL}/api`,
+  baseURL: '/api', // Use relative path for Next.js API routes
   headers: {
     'Content-Type': 'application/json',
   },

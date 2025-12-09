@@ -41,7 +41,13 @@ export async function getAuthUser(): Promise<AuthenticatedUser | null> {
       userRole = 'OPERATOR';
       console.log('🔧 HARDCODED: Setting widgeon1996@gmail.com as OPERATOR');
     } else {
-      userRole = (clerkUser.publicMetadata?.role as UserRole) || 'EMPLOYEE';
+      // Check Clerk metadata for role (handle both uppercase and lowercase)
+      const clerkRole = clerkUser.publicMetadata?.role as string;
+      if (clerkRole?.toUpperCase() === 'OPERATOR') {
+        userRole = 'OPERATOR';
+      } else {
+        userRole = 'EMPLOYEE';
+      }
     }
 
     if (!dbUser) {
